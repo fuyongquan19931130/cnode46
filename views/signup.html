@@ -30,7 +30,7 @@
                 <label for="password">密码</label>
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password">
             </div>
-            <button type="submit" class="btn btn-success btn-block">注册</button>
+            <button type="submit" class="btn btn-success btn-block" id="zcBtn">注册</button>
         </form>
         <div class="message">
             <p>已有账号? <a href="/login">点击登录</a>.</p>
@@ -38,6 +38,39 @@
     </div>
     <script src="/node_modules/jquery/dist/jquery.js"></script>
     <script>
+        // 提交表单流程
+        //     1-客户端 发送表单
+        //     1.1--获取表单数据
+        //        ----表单验证
+        //     1.2--监听submit事件
+        //     1.3--ajax发送post请求到后台
+            
+        //     2-服务端 获取表单数据
+        //     2.1--获取req.body中的表单数据
+        //     2.2--验证
+        //             格式是否正确
+        //             数据库中是否存在此用户
+        //     2.3--把登录之后的页面(首页)返回到前端
+        $('#signup_form').on('submit', function (e) {
+            e.preventDefault();
+            // serialize()序列化
+            var formdata = $('#signup_form').serialize();
+            console.log(formdata);
+            $.ajax({
+                url: '/signup',
+                type: 'post',
+                data: formdata,
+                dataType: 'json',
+                success: function (results) {
+                    console.log(results)
+                },
+                error: function (error) {
+                    if (error) {
+                        throw error
+                    }
+                }
+            })
+        })
     </script>
 </body>
 

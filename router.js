@@ -1,11 +1,13 @@
+// -----提取路由-----
 // 1-安装express
 var express = require('express')
+// 加载所有的处理函数模块
 var user = require('./controllers/user')
 var topic = require('./controllers/topic')
 var index = require('./controllers/index')
 // 2-使用express.Router()返回一个实例
 var router = express.Router();
-// 3-router.get()
+// 3- 配置路由 router.get()
 // --首页路由
 router.get('/', index.showIndex)
 // --用户路由
