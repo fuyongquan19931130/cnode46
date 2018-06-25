@@ -2,12 +2,12 @@
 var express = require('express')
 var user = require('./controllers/user')
 var topic = require('./controllers/topic')
-var index = require('./controllers/index.js')
+var index = require('./controllers/index')
 // 2-使用express.Router()返回一个实例
 var router = express.Router();
 // 3-router.get()
 // --首页路由
-router.get('', index.showIndex)
+router.get('/', index.showIndex)
 // --用户路由
 router.get('/signin', user.showSignin)
 	  .post('/signin', user.handleSignin)
