@@ -1,12 +1,14 @@
 // 程序入口
 // app.js的作用
-// 1-配置    2-监听
+// 1-配置    2-监听端口
 const express = require('express')
 const bodyParser = require('body-parser')
+const MySQLStore = require('express-mysql-session')(session)
 // 导入处理函数的模块
 const expressArtTemplate = require('express-art-template')
 // 引入session模块
 const session = require()
+// 导入路由模块
 const router = require('./router')
 
 const app = express()
@@ -18,12 +20,26 @@ app.engine('html', expressArtTemplate)
 app.use(bodyParser.urlencoded({ extended: false }))
 // app.use(bodyParser.json())
 
+const db = config.database;
+// 把session保存到mysql中
+const options = {
+  host: db.host,
+  port: db.port,
+  user: db.user,
+  password: db.password,
+  database: db.database
+}
+
+const sessionStore = new MySQLStore(options)
 // 配置session
 app.use(session({
-	secret: 'keyboard cat',
-	resave: false,
-	saveUninitialized: true
+  key: 'sessionid',  // 修改sessionid的名称
+  secret: 'keyboard cat',  // 对sessionid 进行加密 
+  resave: false,   // 强制重新存储服务器上的session数据  
+  store: sessionStore,   // 配置把session数据存储到mysql
+  saveUninitialized: true  // 即使不写session 也会生成sessionid
 }))
+
 
 app.use(router)
 // 监听端口
