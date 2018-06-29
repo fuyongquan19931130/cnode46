@@ -53,7 +53,22 @@
     </div>
     <script src="/node_modules/jquery/dist/jquery.js"></script>
     <script>
-       
+       $('#signin_form').on('submit', function (e) {
+            //取消表单的默认行为
+            e.preventDefault();
+            // TODO 表单验证
+
+            // 获取表单数据
+            var data = $(this).serialize();
+            $.post('/signin', data, function (resData) {
+                // {code: 200, msg: ''}
+                var {code, msg} = resData;
+                if (code === 200) {
+                    location.href = '/';
+                }
+                alert(msg);
+            });
+       }))
     </script>
 </body>
 

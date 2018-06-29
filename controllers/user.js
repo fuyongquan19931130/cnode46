@@ -1,48 +1,87 @@
-// 1引包
-var mysql = require('mysql');
-// 2买一个冰箱(创建一个数据库连接)
-var connection = mysql.createConnection({
-    host: 'localhost', // 要连接的主机名
-    user: 'root', // 要连接的数据库的用户名
-    password: 'root', // 数据库密码
-    database: 'ithub' // 数据库的名字
-});
-// 3打开冰箱门(开始连接)
-connection.connect();
-// 4把大象装冰箱(执行sql语句) 
-// query(增删改查的sql语句)
-// SELECT 1 + 1 AS solution:将1+1的结果起了个名字叫solution(并没有查表)
-// 建议在表名两侧加上`` 防止连写时报错
-
-
+// 引包
+const md5 = require('md5')
+const userModel = require('../models/users')
+// 1-展示登录页面
 exports.showSignin = (req, res) => {
 	res.render('signin.html')
 }
+// 2-处理登录逻辑
 exports.handleSignin = (req, res) => {
-	res.render("signin.html")
+    // res.render("signin.html")
+    // 验证邮箱和密码是否正确
+    userModel.getByEmail(req.body.email, (err, user) => {
+        if (err) {
+            return res.send('服务器内部异常')
+        }
+        // 判断user是否存在
+        if (!user) {
+            // 不存在
+            return res.json({
+                code: 401,
+                msg: '邮箱不存在，请重新输入或者注册新用户'
+            })
+        }
+        // 判断密码是否正确
+        const password = md5(req.body.password)
+        if (password === user.password) {
+            // 记录session 保存状态
+            delete user.password
+            req.session.user = user
+            // 是跳转  还是输出json??
+            res.json({
+                code: 200,
+                msg: '登录成功'
+            })
+        } else {
+            res.json({
+                code: 402,
+                msg: '密码错误，请重新输入'
+            })
+        }
+    })
 }
+// 3-展示注册页面
 exports.showSignup = (req, res) => {
 	res.render('signup.html')
 }
+// 4-处理注册逻辑
 exports.handleSignup = (req, res) => {
-	var body = req.body
-	console.log(body)
-	// 2-服务端 获取表单数据
-    //     2.1--获取req.body中的表单数据
-    //     2.2--验证
-    //             格式是否正确
-    //             数据库中是否存在此用户
-    //     2.3--把登录之后的页面(首页)返回到前端
-    var sqlStr = 'insert into `users` set ?'
-    connection.query(sqlStr, body,  function(error, results, fields) {
-		if (error)  throw error; 
-		console.log(results);
-    });
-	// res.render('signup.html')
-}
-exports.handleSignout = (req, res) => {
-	res.send("handleSignout")
-}
+    // res.render('signup.html')
+    // 添加数据之前，要做数据验证
+  // TODO  验证数据是否数据
 
-// 关闭冰箱门
-// connection.end();
+  // 验证邮箱是否重复
+    userModel.getByEmail(req.body.email, (err, user) => {
+        if (err) {
+        return res.send('服务器内部错误');
+        }
+        // 验证昵称
+        userModel.getByNickname(req.body.nickname, (err, user) => {
+        if (err) {
+            return res.send('服务器内部错误');
+        }
+        req.body.createdAt = new Date();
+        req.body.password = md5(req.body.password);
+        // 插入用户
+        userModel.createUser(req.body, (err, isOK) => {
+            if (isOK) {
+            res.redirect('/signin');
+            } else {
+            res.render('/signup', {
+                msg: '注册失败'
+            });
+            }
+        })
+        });
+        
+    });
+}
+// 5-退出
+exports.handleSignout = (req, res) => {
+    // res.send("handleSignout")
+    // 销毁session
+    // delete req.session.user
+    req.session.destroy()
+    // 跳转到登录页面
+    res.redirect('/signin')
+}
